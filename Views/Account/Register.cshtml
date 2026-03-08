@@ -1,0 +1,89 @@
+@model RegisterViewModel
+@{ ViewData["Title"] = "Регистрация"; }
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow border-0 rounded-4 mt-4">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-mortarboard-fill display-4 text-primary"></i>
+                    <h3 class="fw-bold mt-2">Регистрация</h3>
+                </div>
+
+                <ul class="nav nav-pills nav-fill mb-4">
+                    <li class="nav-item"><a class="nav-link" href="/Account/Login">Вход</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/Account/Register">Регистрация</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Account/ForgotPassword">Пароль</a></li>
+                </ul>
+
+                <form asp-action="Register" method="post" id="registerForm">
+                    <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label fw-semibold">ФИО</label>
+                        <input asp-for="FullName" class="form-control" placeholder="Иванов Иван Иванович" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold">Email</label>
+                        <input asp-for="Email" class="form-control" placeholder="email@example.com" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-semibold">Пароль</label>
+                        <input asp-for="Password" class="form-control" placeholder="Минимум 6 символов" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ConfirmPassword" class="form-label fw-semibold">Повтор пароля</label>
+                        <input asp-for="ConfirmPassword" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Role" class="form-label fw-semibold">Роль</label>
+                        <select asp-for="Role" class="form-select" id="roleSelect">
+                            <option value="Student">Студент</option>
+                           @*  <option value="Teacher">Преподаватель</option> *@
+                        </select>
+                    </div>
+
+                    <!-- Student  -->
+                    <div id="studentFields">
+                        <div class="mb-3">
+                            <label asp-for="Course" class="form-label fw-semibold">Курс</label>
+                            <select asp-for="Course" class="form-select">
+                                @for (int i = 1; i <= 6; i++) { <option value="@i">@i курс</option> }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Group" class="form-label fw-semibold">Группа</label>
+                            <input asp-for="Group" class="form-control" placeholder="ИТ-301" />
+                        </div>
+                    </div>
+
+                    <!-- Teacher  -->
+                    @* <div id="teacherFields" style="display:none">
+                        <div class="mb-3">
+                            <label asp-for="Department" class="form-label fw-semibold">Кафедра</label>
+                            <input asp-for="Department" class="form-control" placeholder="Кафедра информатики" />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Position" class="form-label fw-semibold">Должность</label>
+                            <input asp-for="Position" class="form-control" placeholder="Доцент" />
+                        </div>
+                    </div> *@
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="bi bi-person-check me-1"></i>Зарегистрироваться
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('roleSelect').addEventListener('change', function() {
+        document.getElementById('studentFields').style.display = this.value === 'Student' ? 'block' : 'none';
+        document.getElementById('teacherFields').style.display = this.value === 'Teacher' ? 'block' : 'none';
+    });
+</script>
+}

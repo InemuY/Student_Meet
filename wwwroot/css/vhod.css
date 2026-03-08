@@ -1,0 +1,187 @@
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f6f8;
+    color: #222;
+    line-height: 1.6;
+}
+
+
+.top-bar {
+    background: #ffffff;
+    border-bottom: 1px solid #d9e1e8;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-left img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+}
+
+.site-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1c63c7;
+    line-height: 1.2;
+}
+
+.login-btn {
+    background: #2f80ed;
+    color: #fff;
+    padding: 6px 18px;
+    text-decoration: none;
+    border-radius: 3px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.login-btn:hover {
+    background: #1c63c7;
+}
+
+
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    background: #ffffff;
+    padding: 35px 40px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+
+h1 {
+    margin-top: 0;
+    color: #1c63c7;
+    font-size: 26px;
+    border-bottom: 2px solid #2f80ed;
+    padding-bottom: 10px;
+}
+
+h2 {
+    margin-top: 35px;
+    color: #2f80ed;
+    font-size: 20px;
+}
+
+
+p {
+    margin: 12px 0;
+    text-align: justify;
+}
+
+
+ul {
+    margin: 10px 0 20px 22px;
+}
+
+li {
+    margin-bottom: 6px;
+}
+
+a.login-btn:hover {
+    text-decoration: none;
+}
+a {
+    color: #2f80ed;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ===== РАЗДЕЛЫ ===== */
+section {
+    margin-bottom: 25px;
+}
+
+/* ===== АДАПТИВ ===== */
+@media (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 15px;
+    }
+
+    .header-left {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .site-title {
+        font-size: 16px;
+        max-width: 200px;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .login-btn {
+        align-self: flex-end;
+        padding: 5px 15px;
+        font-size: 14px;
+    }
+
+    .header-left img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .container {
+        margin: 20px 10px;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    p, li {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .site-title {
+        max-width: 150px;
+        font-size: 14px;
+    }
+
+    .login-btn {
+        font-size: 12px;
+        padding: 4px 12px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    h2 {
+        font-size: 16px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+}

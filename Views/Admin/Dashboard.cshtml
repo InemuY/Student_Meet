@@ -1,0 +1,480 @@
+@model AdminDashboardViewModel
+@{ ViewData["Title"] = "Панель администратора"; }
+<link rel="icon" href="~/f.png" alt="иконка">
+@if (TempData["EditSuccess"] != null)
+{
+    <div class="alert alert-info alert-dismissible mb-4 py-2">
+        <i class="bi bi-pencil-check me-1"></i>@TempData["EditSuccess"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["RoleSuccess"] != null)
+{
+    <div class="alert alert-success alert-dismissible mb-4 py-2">
+        <i class="bi bi-check-circle me-1"></i>@TempData["RoleSuccess"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Profile Card -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+            <div class="card-body text-center p-4">
+                <div class="position-relative d-inline-block mb-3">
+                    @if (!string.IsNullOrEmpty(Model.Admin.PhotoPath))
+                    {
+                        <img id="avatarImg" src="@Model.Admin.PhotoPath" class="rounded-circle shadow" width="110" height="110" style="object-fit:cover" />
+                    }
+                    else
+                    {
+                        <div id="avatarPlaceholder" class="rounded-circle bg-danger d-flex align-items-center justify-content-center shadow mx-auto" style="width:110px;height:110px">
+                            <i class="bi bi-person-fill text-white" style="font-size:3rem"></i>
+                        </div>
+                        <img id="avatarImg" src="#" class="rounded-circle shadow d-none" width="110" height="110" style="object-fit:cover" />
+                    }
+                </div>
+                <h4 class="fw-bold">@Model.Admin.FullName</h4>
+                <span class="badge bg-danger mb-2">Администратор</span>
+                <p class="text-muted small"><i class="bi bi-envelope me-1"></i>@Model.Admin.Email</p>
+                <form asp-controller="Admin" asp-action="UploadPhoto" method="post" enctype="multipart/form-data" class="mt-3" id="adminPhotoForm">
+                    <label class="btn btn-outline-primary btn-sm w-100" style="cursor:pointer">
+                        <i class="bi bi-camera me-1"></i>Изменить фото
+                        <input type="file" name="photo" id="adminPhotoInput" accept=".jpg,.jpeg,.png,.gif,.webp" class="d-none" />
+                    </label>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="col-md-8">
+        <div class="row g-3 mb-3">
+            <div class="col-4">
+                <div class="card border-0 rounded-4 bg-primary text-white text-center p-3 shadow-sm">
+                    <div class="fs-1 fw-bold">@Model.Students.Count</div>
+                    <div class="small">Студентов</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border-0 rounded-4 bg-success text-white text-center p-3 shadow-sm">
+                    <div class="fs-1 fw-bold">@Model.Teachers.Count</div>
+                    <div class="small">Преподавателей</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card border-0 rounded-4 bg-warning text-white text-center p-3 shadow-sm">
+                    <div class="fs-1 fw-bold">@Model.NIRs.Count</div>
+                    <div class="small">НИР</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="card shadow-sm border-0 rounded-4 mt-4">
+    <div class="card-body">
+        <ul class="nav nav-tabs mb-4" id="adminTabs">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#studentsTab"><i class="bi bi-mortarboard me-1"></i>Студенты</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#teachersTab"><i class="bi bi-person-workspace me-1"></i>Преподаватели</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#nirTab"><i class="bi bi-journal-bookmark me-1"></i>НИР</button></li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Students -->
+            <div class="tab-pane fade show active" id="studentsTab">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr><th>ФИО</th><th>Email</th><th>Курс / Группа</th><th>Действия</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model.Students)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(s.PhotoPath))
+                                            { <img src="@s.PhotoPath" class="rounded-circle me-2" width="32" height="32" style="object-fit:cover" /> }
+                                        @s.FullName
+                                    </td>
+                                    <td>@s.Email</td>
+                                    <td class="text-muted small">
+                                        @{ var sp = Model.StudentProfiles.FirstOrDefault(p => p.UserId == s.Id); }
+                                        @(sp != null ? $"{sp.Course} курс, {sp.Group ?? "—"}" : "—")
+                                    </td>
+                                    <td>
+                                        <!-- Редактировать -->
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                                onclick="openEditStudentModal('@s.Id','@Html.Raw(s.FullName.Replace("'","\'"))','@s.Email',@(sp?.Course ?? 0),'@(sp?.Group ?? "")')"
+                                                title="Редактировать">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <!-- Повысить -->
+                                        <button type="button" class="btn btn-outline-success btn-sm"
+                                                onclick="openPromoteModal('@s.Id', '@Html.Raw(s.FullName.Replace("'","\'"))')"
+                                                title="Сделать преподавателем">
+                                            <i class="bi bi-arrow-up-circle"></i>
+                                        </button>
+                                        <!-- Удалить -->
+                                        <form asp-action="DeleteUser" method="post" class="d-inline" onsubmit="return confirm('Удалить пользователя?')">
+                                            <input type="hidden" name="id" value="@s.Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Удалить">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Teachers -->
+            <div class="tab-pane fade" id="teachersTab">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr><th>ФИО</th><th>Email</th><th>Кафедра / Должность</th><th>Действия</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var t in Model.Teachers)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(t.PhotoPath))
+                                            { <img src="@t.PhotoPath" class="rounded-circle me-2" width="32" height="32" style="object-fit:cover" /> }
+                                        @t.FullName
+                                    </td>
+                                    <td>@t.Email</td>
+                                    <td class="text-muted small">
+                                        @{ var tp = Model.TeacherProfiles.FirstOrDefault(p => p.UserId == t.Id); }
+                                        @(tp != null ? $"{tp.Department}, {tp.Position}" : "—")
+                                    </td>
+                                    <td>
+                                        <!-- Редактировать -->
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                                onclick="openEditTeacherModal('@t.Id','@Html.Raw(t.FullName.Replace("'","\'"))','@t.Email','@Html.Raw((tp?.Department??"").Replace("'","\'"))','@Html.Raw((tp?.Position??"").Replace("'","\'"))')"
+                                                title="Редактировать">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <form asp-action="DeleteUser" method="post" class="d-inline" onsubmit="return confirm('Удалить?')">
+                                            <input type="hidden" name="id" value="@t.Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- NIRs -->
+            <div class="tab-pane fade" id="nirTab">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr><th>Название</th><th>Преподаватель</th><th>Статус</th><th>Участников</th><th>Действия</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var n in Model.NIRs)
+                            {
+                                <tr data-bs-toggle="collapse" data-bs-target="#nir-@n.Id" style="cursor:pointer">
+                                    <td class="fw-semibold">
+                                        <i class="bi bi-chevron-right me-1 text-muted small"></i>@n.Title
+                                    </td>
+                                    <td>@n.Teacher.User.FullName</td>
+                                    <td>
+                                        @if (n.IsOpen) { <span class="badge bg-success">Открыта</span> }
+                                        else { <span class="badge bg-secondary">Закрыта</span> }
+                                    </td>
+                                    <td>
+                                        @{ var approved = n.Participants.Count(p => p.Status == "Approved"); }
+                                        <span class="fw-semibold">@n.Participants.Count</span>
+                                        <span class="text-muted small">/ @n.MaxParticipants</span>
+                                        @if (approved > 0) { <span class="badge bg-success ms-1">@approved одобр.</span> }
+                                        @{ var pending = n.Participants.Count(p => p.Status == "Pending"); }
+                                        @if (pending > 0) { <span class="badge bg-warning ms-1">@pending ожид.</span> }
+                                    </td>
+                                    <td onclick="event.stopPropagation()">
+                                        <!-- Редактировать НИР -->
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                                onclick="openEditNIRModal(@n.Id,'@Html.Raw(n.Title.Replace("'","\'"))','@Html.Raw((n.Description??"").Replace("'","\'"))','@Html.Raw((n.Direction??"").Replace("'","\'"))',@n.MaxParticipants,@(n.IsOpen ? "true" : "false"))"
+                                                title="Редактировать">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <form asp-action="ToggleNIR" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@n.Id" />
+                                            <button type="submit" class="btn btn-outline-warning btn-sm" title="Открыть/закрыть"><i class="bi bi-toggle-on"></i></button>
+                                        </form>
+                                        <form asp-action="DeleteNIR" method="post" class="d-inline" onsubmit="return confirm('Удалить НИР?')">
+                                            <input type="hidden" name="id" value="@n.Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @if (n.Participants.Any())
+                                {
+                                    <tr class="collapse" id="nir-@n.Id">
+                                        <td colspan="5" class="p-0">
+                                            <div class="bg-light px-4 py-2">
+                                                <table class="table table-sm mb-0">
+                                                    <thead><tr><th>Студент</th><th>Email</th><th>Дата записи</th><th>Статус</th></tr></thead>
+                                                    <tbody>
+                                                    @foreach (var p in n.Participants)
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                @if (!string.IsNullOrEmpty(p.Student?.User?.PhotoPath))
+                                                                    { <img src="@p.Student.User.PhotoPath" class="rounded-circle me-1" width="24" height="24" style="object-fit:cover" /> }
+                                                                @(p.Student?.User?.FullName ?? "—")
+                                                            </td>
+                                                            <td class="text-muted small">@(p.Student?.User?.Email ?? "—")</td>
+                                                            <td class="text-muted small">@p.JoinedAt.ToString("dd.MM.yyyy")</td>
+                                                            <td>
+                                                                @{
+                                                                    var pb = p.Status switch { "Approved" => "bg-success", "Rejected" => "bg-danger", _ => "bg-warning" };
+                                                                    var pl = p.Status switch { "Approved" => "Одобрен", "Rejected" => "Отклонён", _ => "Ожидает" };
+                                                                }
+                                                                <span class="badge @pb">@pl</span>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Модалка: редактирование студента -->
+<div class="modal fade" id="editStudentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2 text-primary"></i>Редактировать студента</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="EditStudent" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="editStudentId" />
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">ФИО</label>
+                        <input type="text" name="FullName" id="editStudentName" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input type="email" name="Email" id="editStudentEmail" class="form-control" required />
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-5">
+                            <label class="form-label fw-semibold">Курс</label>
+                            <input type="number" name="Course" id="editStudentCourse" class="form-control" min="1" max="6" required />
+                        </div>
+                        <div class="col-7">
+                            <label class="form-label fw-semibold">Группа</label>
+                            <input type="text" name="Group" id="editStudentGroup" class="form-control" placeholder="ИТ-301" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: редактирование преподавателя -->
+<div class="modal fade" id="editTeacherModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2 text-primary"></i>Редактировать преподавателя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="EditTeacher" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="editTeacherId" />
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">ФИО</label>
+                        <input type="text" name="FullName" id="editTeacherName" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input type="email" name="Email" id="editTeacherEmail" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Кафедра</label>
+                        <input type="text" name="Department" id="editTeacherDept" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Должность</label>
+                        <input type="text" name="Position" id="editTeacherPos" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка: редактирование НИР -->
+<div class="modal fade" id="editNIRModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2 text-primary"></i>Редактировать НИР</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="EditNIR" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="Id" id="editNIRId" />
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Название</label>
+                        <input type="text" name="Title" id="editNIRTitle" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Описание</label>
+                        <textarea name="Description" id="editNIRDesc" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Направление</label>
+                        <input type="text" name="Direction" id="editNIRDir" class="form-control" placeholder="ИИ, ИБ, Математика..." />
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-7">
+                            <label class="form-label fw-semibold">Макс. участников</label>
+                            <input type="number" name="MaxParticipants" id="editNIRMax" class="form-control" min="1" required />
+                        </div>
+                        <div class="col-5 d-flex align-items-end">
+                            <div class="form-check mb-2">
+                                <input type="checkbox" name="IsOpen" id="editNIROpen" class="form-check-input" value="true" />
+                                <label class="form-check-label fw-semibold" for="editNIROpen">Открыта</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно повышения до преподавателя -->
+<div class="modal fade" id="promoteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-arrow-up-circle me-2 text-success"></i>Повышение до преподавателя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="ChangeRole" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="promoteUserId" />
+                    <p class="text-muted mb-3">Студент: <strong id="promoteUserName"></strong></p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Кафедра <span class="text-danger">*</span></label>
+                        <input type="text" name="department" class="form-control" placeholder="Например: Кафедра информатики" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Должность <span class="text-danger">*</span></label>
+                        <input type="text" name="position" class="form-control" placeholder="Например: Доцент" required />
+                    </div>
+                    <div class="alert alert-warning py-2 small mb-0">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Все участия студента в НИР будут удалены.
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-arrow-up-circle me-1"></i>Повысить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Редактирование студента
+    window.openEditStudentModal = function(id, name, email, course, group) {
+        document.getElementById('editStudentId').value = id;
+        document.getElementById('editStudentName').value = name;
+        document.getElementById('editStudentEmail').value = email;
+        document.getElementById('editStudentCourse').value = course;
+        document.getElementById('editStudentGroup').value = group;
+        new bootstrap.Modal(document.getElementById('editStudentModal')).show();
+    };
+
+    // Редактирование преподавателя
+    window.openEditTeacherModal = function(id, name, email, dept, pos) {
+        document.getElementById('editTeacherId').value = id;
+        document.getElementById('editTeacherName').value = name;
+        document.getElementById('editTeacherEmail').value = email;
+        document.getElementById('editTeacherDept').value = dept;
+        document.getElementById('editTeacherPos').value = pos;
+        new bootstrap.Modal(document.getElementById('editTeacherModal')).show();
+    };
+
+    // Редактирование НИР
+    window.openEditNIRModal = function(id, title, desc, dir, max, isOpen) {
+        document.getElementById('editNIRId').value = id;
+        document.getElementById('editNIRTitle').value = title;
+        document.getElementById('editNIRDesc').value = desc;
+        document.getElementById('editNIRDir').value = dir;
+        document.getElementById('editNIRMax').value = max;
+        document.getElementById('editNIROpen').checked = isOpen;
+        new bootstrap.Modal(document.getElementById('editNIRModal')).show();
+    };
+
+    // Промоут модал
+    window.openPromoteModal = function(userId, userName) {
+        document.getElementById('promoteUserId').value = userId;
+        document.getElementById('promoteUserName').textContent = userName;
+        new bootstrap.Modal(document.getElementById('promoteModal')).show();
+    };
+
+    var input = document.getElementById('adminPhotoInput');
+    if (!input) return;
+    input.addEventListener('change', function () {
+        var file = this.files[0];
+        if (!file) return;
+        var allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type) || file.size > 5 * 1024 * 1024) {
+            alert('Недопустимый формат или размер больше 5 МБ.');
+            this.value = '';
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var img = document.getElementById('avatarImg');
+            var ph = document.getElementById('avatarPlaceholder');
+            if (img) { img.src = e.target.result; img.classList.remove('d-none'); }
+            if (ph) ph.classList.add('d-none');
+            setTimeout(function () { document.getElementById('adminPhotoForm').submit(); }, 300);
+        };
+        reader.readAsDataURL(file);
+    });
+});
+</script>
+}

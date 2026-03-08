@@ -1,0 +1,159 @@
+@model StudentDashboardViewModel
+@{ ViewData["Title"] = "Мой профиль"; }
+<link rel="icon" href="~/f.png" alt="иконка">
+<div class="row g-4">
+    <!-- Profile -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body text-center p-4">
+                <!-- Аватар -->
+                <div class="mb-3">
+                    @if (!string.IsNullOrEmpty(Model.User.PhotoPath))
+                    {
+                        <img id="avatarImg" src="@Model.User.PhotoPath" class="rounded-circle shadow" width="110" height="110" style="object-fit:cover" />
+                    }
+                    else
+                    {
+                        <div id="avatarPlaceholder" class="rounded-circle bg-primary d-flex align-items-center justify-content-center shadow mx-auto" style="width:110px;height:110px">
+                            <i class="bi bi-person-fill text-white" style="font-size:3rem"></i>
+                        </div>
+                        <img id="avatarImg" src="#" class="rounded-circle shadow d-none" width="110" height="110" style="object-fit:cover" />
+                    }
+                </div>
+
+                <h4 class="fw-bold">@Model.User.FullName</h4>
+                <span class="badge bg-primary mb-2">Студент</span>
+                <div class="text-muted small mt-2">
+                    <p class="mb-1"><i class="bi bi-book me-1"></i>Курс: <strong>@(Model.Profile?.Course ?? 0)</strong></p>
+                    <p class="mb-1"><i class="bi bi-people me-1"></i>Группа: <strong>@(Model.Profile?.Group ?? "—")</strong></p>
+                    <p class="mb-0"><i class="bi bi-envelope me-1"></i>@Model.User.Email</p>
+                </div>
+
+                @if (TempData["PhotoError"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible py-2 px-3 small mt-3 mb-0">
+                        <i class="bi bi-exclamation-circle me-1"></i>@TempData["PhotoError"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["PhotoSuccess"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible py-2 px-3 small mt-3 mb-0">
+                        <i class="bi bi-check-circle me-1"></i>@TempData["PhotoSuccess"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form asp-controller="Student" asp-action="UploadPhoto" method="post" enctype="multipart/form-data" class="mt-3" id="studentPhotoForm">
+                    <label class="btn btn-outline-primary btn-sm w-100" style="cursor:pointer">
+                        <i class="bi bi-camera me-1"></i>Изменить фото
+                        <input type="file" name="photo" id="studentPhotoInput" accept=".jpg,.jpeg,.png,.gif,.webp" class="d-none" />
+                    </label>
+                    <p class="text-muted" style="font-size:11px; margin-top:4px; margin-bottom:0">JPG, PNG, GIF, WEBP · до 5 МБ</p>
+                </form>
+
+                <a asp-controller="Student" asp-action="NIRList" class="btn btn-primary w-100 mt-2">
+                    <i class="bi bi-journal-plus me-1"></i>Записаться в НИР
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- NIR participations -->
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-journal-bookmark me-2 text-primary"></i>Мои НИР</h5>
+            </div>
+            <div class="card-body">
+                @if (!Model.Participations.Any())
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-journal-x display-4 opacity-25"></i>
+                        <p class="mt-3">Вы не записаны ни в одну НИР</p>
+                        <a asp-controller="Student" asp-action="NIRList" class="btn btn-primary btn-sm">Найти НИР</a>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var p in Model.Participations)
+                    {
+                        <div class="card border rounded-3 mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">@p.NIR.Title</h6>
+                                        <p class="text-muted small mb-1">
+                                            <i class="bi bi-person-workspace me-1"></i>@p.NIR.Teacher.User.FullName
+                                        </p>
+                                        <p class="text-muted small mb-0">
+                                            <i class="bi bi-calendar3 me-1"></i>@p.JoinedAt.ToString("dd.MM.yyyy")
+                                        </p>
+                                    </div>
+                                    <div class="text-end">
+                                        @{
+                                            var badgeClass = p.Status switch { "Approved" => "bg-success", "Rejected" => "bg-danger", _ => "bg-warning" };
+                                            var statusText = p.Status switch { "Approved" => "Одобрено", "Rejected" => "Отклонено", _ => "На рассмотрении" };
+                                        }
+                                        <span class="badge @badgeClass mb-2">@statusText</span>
+                                        <br />
+                                        <form asp-action="LeaveNIR" method="post" class="d-inline" onsubmit="return confirm('Покинуть НИР?')">
+                                            <input type="hidden" name="participantId" value="@p.Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                <i class="bi bi-x-circle me-1"></i>Покинуть
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('studentPhotoInput');
+    if (!input) return;
+
+    input.addEventListener('change', function () {
+        var file = this.files[0];
+        if (!file) return;
+
+        var allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        var maxSize = 5 * 1024 * 1024;
+
+        if (!allowedTypes.includes(file.type)) {
+            alert('Недопустимый формат. Используйте JPG, PNG, GIF или WEBP.');
+            this.value = '';
+            return;
+        }
+        if (file.size > maxSize) {
+            alert('Файл слишком большой. Максимальный размер — 5 МБ.');
+            this.value = '';
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var img = document.getElementById('avatarImg');
+            var placeholder = document.getElementById('avatarPlaceholder');
+            if (img) {
+                img.src = e.target.result;
+                img.classList.remove('d-none');
+            }
+            if (placeholder) placeholder.classList.add('d-none');
+
+            setTimeout(function () {
+                document.getElementById('studentPhotoForm').submit();
+            }, 300);
+        };
+        reader.readAsDataURL(file);
+    });
+});
+</script>
+}

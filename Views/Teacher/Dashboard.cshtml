@@ -1,0 +1,228 @@
+@model TeacherDashboardViewModel
+@{ ViewData["Title"] = "Профиль преподавателя"; }
+<link rel="icon" href="~/f.png" alt="иконка">
+<div class="row g-4">
+    <!-- Profile -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body text-center p-4">
+                <!-- Аватар -->
+                <div class="mb-3">
+                    @if (!string.IsNullOrEmpty(Model.User.PhotoPath))
+                    {
+                        <img id="avatarImg" src="@Model.User.PhotoPath" class="rounded-circle shadow" width="110" height="110" style="object-fit:cover" />
+                    }
+                    else
+                    {
+                        <div id="avatarPlaceholder" class="rounded-circle bg-success d-flex align-items-center justify-content-center shadow mx-auto" style="width:110px;height:110px">
+                            <i class="bi bi-person-workspace text-white" style="font-size:3rem"></i>
+                        </div>
+                        <img id="avatarImg" src="#" class="rounded-circle shadow d-none" width="110" height="110" style="object-fit:cover" />
+                    }
+                </div>
+
+                <h4 class="fw-bold">@Model.User.FullName</h4>
+                <span class="badge bg-success mb-2">Преподаватель</span>
+                <div class="text-muted small mt-2">
+                    <p class="mb-1"><i class="bi bi-building me-1"></i>@(Model.Profile?.Department ?? "—")</p>
+                    <p class="mb-1"><i class="bi bi-briefcase me-1"></i>@(Model.Profile?.Position ?? "—")</p>
+                    <p class="mb-0"><i class="bi bi-envelope me-1"></i>@Model.User.Email</p>
+                </div>
+
+                @if (TempData["PhotoError"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible py-2 px-3 small mt-3 mb-0">
+                        <i class="bi bi-exclamation-circle me-1"></i>@TempData["PhotoError"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["PhotoSuccess"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible py-2 px-3 small mt-3 mb-0">
+                        <i class="bi bi-check-circle me-1"></i>@TempData["PhotoSuccess"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @if (TempData["ProfileSuccess"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible py-2 px-3 small mt-3 mb-0">
+                        <i class="bi bi-check-circle me-1"></i>@TempData["ProfileSuccess"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form asp-controller="Teacher" asp-action="UploadPhoto" method="post" enctype="multipart/form-data" class="mt-3" id="teacherPhotoForm">
+                    <label class="btn btn-outline-success btn-sm w-100" style="cursor:pointer">
+                        <i class="bi bi-camera me-1"></i>Изменить фото
+                        <input type="file" name="photo" id="teacherPhotoInput" accept=".jpg,.jpeg,.png,.gif,.webp" class="d-none" />
+                    </label>
+                    <p class="text-muted" style="font-size:11px; margin-top:4px; margin-bottom:0">JPG, PNG, GIF, WEBP · до 5 МБ</p>
+                </form>
+
+                <a asp-action="Students" class="btn btn-success w-100 mt-2">
+                    <i class="bi bi-people me-1"></i>Мои НИР
+                </a>
+                <button type="button" class="btn btn-outline-secondary w-100 mt-2"
+                        data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <i class="bi bi-pencil me-1"></i>Редактировать профиль
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NIRs -->
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 rounded-4 mb-3">
+            <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-journal-bookmark me-2 text-success"></i></h5>
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addNIRModal">
+                        <i class="bi bi-plus-circle me-1"></i>Добавить НИР
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (!Model.NIRs.Any())
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-journal-x display-4 opacity-25"></i>
+                        <p class="mt-3">У вас нет НИР</p>
+                    </div>
+                }
+                @foreach (var nir in Model.NIRs)
+                {
+                    <div class="card border rounded-3 mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="fw-bold mb-1">@nir.Title</h6>
+                                    @if (!string.IsNullOrEmpty(nir.Direction))
+                                        { <span class="badge bg-primary-subtle text-primary me-1">@nir.Direction</span> }
+                                    @if (nir.IsOpen) { <span class="badge bg-success">Открыта</span> }
+                                    else { <span class="badge bg-secondary">Закрыта</span> }
+                                    <p class="text-muted small mb-0 mt-1">
+                                        <i class="bi bi-people me-1"></i>@nir.Participants.Count / @nir.MaxParticipants участников
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add NIR Modal -->
+<div class="modal fade" id="addNIRModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Добавить НИР</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-controller="Teacher" asp-action="CreateNIR" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Название</label>
+                        <input name="title" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Описание</label>
+                        <textarea name="description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Направление</label>
+                        <input name="direction" class="form-control" placeholder="ИИ, ИБ, Математика..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Макс. участников</label>
+                        <input name="maxParticipants" type="number" class="form-control" value="10" min="1" />
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-plus-circle me-1"></i>Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Модальное окно редактирования профиля -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2"></i>Редактировать профиль</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-controller="Teacher" asp-action="UpdateProfile" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Кафедра</label>
+                        <input type="text" name="department" class="form-control"
+                               value="@(Model.Profile?.Department ?? "")"
+                               placeholder="Например: Кафедра информатики" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Должность</label>
+                        <input type="text" name="position" class="form-control"
+                               value="@(Model.Profile?.Position ?? "")"
+                               placeholder="Например: Доцент" required />
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('teacherPhotoInput');
+    if (!input) return;
+
+    input.addEventListener('change', function () {
+        var file = this.files[0];
+        if (!file) return;
+
+        var allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        var maxSize = 5 * 1024 * 1024;
+
+        if (!allowedTypes.includes(file.type)) {
+            alert('Недопустимый формат. Используйте JPG, PNG, GIF или WEBP.');
+            this.value = '';
+            return;
+        }
+        if (file.size > maxSize) {
+            alert('Файл слишком большой. Максимальный размер — 5 МБ.');
+            this.value = '';
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var img = document.getElementById('avatarImg');
+            var placeholder = document.getElementById('avatarPlaceholder');
+            if (img) {
+                img.src = e.target.result;
+                img.classList.remove('d-none');
+            }
+            if (placeholder) placeholder.classList.add('d-none');
+
+            setTimeout(function () {
+                document.getElementById('teacherPhotoForm').submit();
+            }, 300);
+        };
+        reader.readAsDataURL(file);
+    });
+});
+</script>
+}

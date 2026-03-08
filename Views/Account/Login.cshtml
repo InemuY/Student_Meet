@@ -1,0 +1,61 @@
+@model LoginViewModel
+@{ ViewData["Title"] = "Вход"; Layout = "_Layout"; }
+<link rel="icon" href="~/f.png" alt="иконка">
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow border-0 rounded-4 mt-5">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-mortarboard-fill display-4 text-primary"></i>
+                    <h3 class="fw-bold mt-2">Портал НИР</h3>
+                    <p class="text-muted small">Система научно-исследовательских работ</p>
+                </div>
+
+                <!-- Tabs -->
+                <ul class="nav nav-pills nav-fill mb-4" id="authTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/Account/Login"><i class="bi bi-box-arrow-in-right me-1"></i>Вход</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Account/Register"><i class="bi bi-person-plus me-1"></i>Регистрация</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Account/ForgotPassword"><i class="bi bi-key me-1"></i>Пароль</a>
+                    </li>
+                </ul>
+
+                <form asp-action="Login" method="post">
+                    <div asp-validation-summary="All" class="alert alert-danger py-2 small" style="display:@(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Email" class="form-control" placeholder="email@example.com" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input asp-for="Password" class="form-control" placeholder="••••••" />
+                        </div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="RememberMe" class="form-check-input" type="checkbox" />
+                        <label asp-for="RememberMe" class="form-check-label">Запомнить меня</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Войти
+                    </button>
+                </form>
+
+                <div class="mt-4 p-3 bg-light rounded-3 small text-muted">
+                    <p class="mb-1"><strong>Тестовые аккаунты:</strong></p>
+                    <p class="mb-0"> admin@nir.ru / Admin123!</p>
+                    <p class="mb-0"> vedyshev@gmail.com/ t:x:QT7=X4pjb]^</p>
+                    <p class="mb-0"> Cherep@gmail.com / 2nU89C+L6d7w?Z2</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
