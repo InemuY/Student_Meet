@@ -167,13 +167,14 @@ namespace NIRApp.Controllers
             nir.IsOpen = model.IsOpen;
             await _db.SaveChangesAsync();
 
-            TempData["EditSuccess"] = $"НИР {nir.Title} обновлена.";
+            TempData["EditSuccess"] = $"Мероприятия {nir.Title} обновлена.";
             return RedirectToAction("Dashboard");
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteNIR(int id)
         {
+            // Каскад удалит NIRParticipants автоматически
             var nir = await _db.NIRs.FindAsync(id);
             if (nir != null) { _db.NIRs.Remove(nir); await _db.SaveChangesAsync(); }
             return RedirectToAction("Dashboard");
@@ -183,7 +184,29 @@ namespace NIRApp.Controllers
         public async Task<IActionResult> DeleteUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user != null) await _userManager.DeleteAsync(user);
+            if (user == null) return RedirectToAction("Dashboard");
+
+            if (user.Role == "Student")
+            {
+                // Каскад удалит NIRParticipants при удалении StudentProfile
+                var profile = await _db.StudentProfiles.FirstOrDefaultAsync(s => s.UserId == id);
+                if (profile != null) { _db.StudentProfiles.Remove(profile); await _db.SaveChangesAsync(); }
+            }
+            else if (user.Role == "Teacher")
+            {
+                // Каскад удалит NIRParticipants при удалении NIRs
+                var profile = await _db.TeacherProfiles
+                    .Include(t => t.NIRs)
+                    .FirstOrDefaultAsync(t => t.UserId == id);
+                if (profile != null)
+                {
+                    _db.NIRs.RemoveRange(profile.NIRs);
+                    _db.TeacherProfiles.Remove(profile);
+                    await _db.SaveChangesAsync();
+                }
+            }
+
+            await _userManager.DeleteAsync(user);
             return RedirectToAction("Dashboard");
         }
 

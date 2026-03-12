@@ -36,13 +36,13 @@ namespace NIRApp.Data
                 .HasOne(p => p.NIR)
                 .WithMany(n => n.Participants)
                 .HasForeignKey(p => p.NIRId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<NIRParticipant>()
                 .HasOne(p => p.Student)
                 .WithMany(s => s.Participations)
                 .HasForeignKey(p => p.StudentProfileId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

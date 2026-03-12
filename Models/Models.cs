@@ -46,12 +46,12 @@ namespace NIRApp.Models
         public ICollection<NIR> NIRs { get; set; } = new List<NIR>();
     }
 
-    // нир
+    // Мероприятия
     public class NIR
     {
         public int Id { get; set; }
 
-        [Required, Display(Name = "Название НИР")]
+        [Required, Display(Name = "Название Мероприятия")]
         public string Title { get; set; } = "";
 
         [Display(Name = "Описание")]

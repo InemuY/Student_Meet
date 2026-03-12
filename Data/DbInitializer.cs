@@ -30,14 +30,43 @@ namespace NIRApp.Data
             }
             catch { /* Игнорируем если уже существует */ }
 
-            // Seed roles
+            // Патч: исправить внешние ключи NIRParticipants на CASCADE (для существующих БД)
+            try
+            {
+                db.Database.ExecuteSqlRaw(@"
+                    IF EXISTS (
+                        SELECT 1 FROM sys.foreign_keys
+                        WHERE name = 'FK_NIRParticipants_NIRs_NIRId'
+                          AND delete_referential_action = 0
+                    )
+                    BEGIN
+                        ALTER TABLE NIRParticipants DROP CONSTRAINT FK_NIRParticipants_NIRs_NIRId;
+                        ALTER TABLE NIRParticipants ADD CONSTRAINT FK_NIRParticipants_NIRs_NIRId
+                            FOREIGN KEY (NIRId) REFERENCES NIRs(Id) ON DELETE CASCADE;
+                    END
+
+                    IF EXISTS (
+                        SELECT 1 FROM sys.foreign_keys
+                        WHERE name = 'FK_NIRParticipants_StudentProfiles_StudentProfileId'
+                          AND delete_referential_action = 0
+                    )
+                    BEGIN
+                        ALTER TABLE NIRParticipants DROP CONSTRAINT FK_NIRParticipants_StudentProfiles_StudentProfileId;
+                        ALTER TABLE NIRParticipants ADD CONSTRAINT FK_NIRParticipants_StudentProfiles_StudentProfileId
+                            FOREIGN KEY (StudentProfileId) REFERENCES StudentProfiles(Id) ON DELETE CASCADE;
+                    END
+                ");
+            }
+            catch { /* Игнорируем если уже настроен */ }
+
+            //  roles
             string[] roles = ["Admin", "Student", "Teacher"];
             foreach (var role in roles)
                 if (!await roleManager.RoleExistsAsync(role))
                     await roleManager.CreateAsync(new IdentityRole(role));
 
             // Seed admin
-            /*if (await userManager.FindByEmailAsync("admin@nir.ru") == null)
+            if (await userManager.FindByEmailAsync("admin@nir.ru") == null)
             {
                 var admin = new ApplicationUser
                 {
@@ -51,14 +80,14 @@ namespace NIRApp.Data
                 if (result.Succeeded) await userManager.AddToRoleAsync(admin, "Admin");
             }
 
-            // Seed teacher
+            //  teacher
             if (await userManager.FindByEmailAsync("teacher@nir.ru") == null)
             {
                 var teacher = new ApplicationUser
                 {
                     UserName = "teacher@nir.ru",
                     Email = "teacher@nir.ru",
-                    FullName = "Иванов Иван Иванович",
+                    FullName = "Ведышев Никита Максимович",
                     Role = "Teacher",
                     EmailConfirmed = true
                 };
@@ -83,14 +112,14 @@ namespace NIRApp.Data
                 }
             }
 
-            // Seed student
+            //  student
             if (await userManager.FindByEmailAsync("student@nir.ru") == null)
             {
                 var student = new ApplicationUser
                 {
                     UserName = "student@nir.ru",
                     Email = "student@nir.ru",
-                    FullName = "Петров Пётр Петрович",
+                    FullName = "Бондарик Антон Сергеевич",
                     Role = "Student",
                     EmailConfirmed = true
                 };
@@ -106,7 +135,7 @@ namespace NIRApp.Data
                     });
                     await db.SaveChangesAsync();
                 }
-            }*/
+            }
         }
     }
 }

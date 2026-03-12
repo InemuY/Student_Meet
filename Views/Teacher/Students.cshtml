@@ -2,7 +2,7 @@
 @{ ViewData["Title"] = "Мои студенты"; }
 <link rel="icon" href="~/f.png" alt="иконка">
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="bi bi-people me-2 text-success"></i>Студенты в моих НИР</h4>
+    <h4 class="fw-bold mb-0"><i class="bi bi-people me-2 text-success"></i>Студенты в моих Мероприятия</h4>
     <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-arrow-left me-1"></i>Мой профиль
     </a>
@@ -21,7 +21,7 @@
                 </div>
                 <div class="col-md-3">
                     <select name="nirFilter" class="form-select">
-                        <option value="">Все НИР</option>
+                        <option value="">Все Мероприятия</option>
                         @foreach (var nir in Model.TeacherNIRs)
                         {
                             <option value="@nir.Id" selected="@(Model.FilterNIR == nir.Id.ToString())">@nir.Title</option>
@@ -61,7 +61,7 @@ else
                 <thead class="table-light">
                     <tr>
                         <th class="ps-4">Студент</th>
-                        <th>НИР</th>
+                        <th>Мероприятия</th>
                         <th>Дата записи</th>
                         <th>Статус</th>
                         <th class="pe-4">Действия</th>
