@@ -127,7 +127,7 @@ namespace NIRApp.Controllers
                 await _db.SaveChangesAsync();
             }
 
-            TempData["EditSuccess"] = $"Профиль студента {user.FullName} обновлён.";
+            TempData["EditSuccess"] = $"Профиль участника {user.FullName} обновлён.";
             return RedirectToAction("Dashboard");
         }
 

@@ -53,13 +53,13 @@
             <div class="col-4">
                 <div class="card border-0 rounded-4 bg-primary text-white text-center p-3 shadow-sm">
                     <div class="fs-1 fw-bold">@Model.Students.Count</div>
-                    <div class="small">Студентов</div>
+                    <div class="small">Участников</div>
                 </div>
             </div>
             <div class="col-4">
                 <div class="card border-0 rounded-4 bg-success text-white text-center p-3 shadow-sm">
                     <div class="fs-1 fw-bold">@Model.Teachers.Count</div>
-                    <div class="small">Преподавателей</div>
+                    <div class="small">Руководителей</div>
                 </div>
             </div>
             <div class="col-4">
@@ -76,8 +76,8 @@
 <div class="card shadow-sm border-0 rounded-4 mt-4">
     <div class="card-body">
         <ul class="nav nav-tabs mb-4" id="adminTabs">
-            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#studentsTab"><i class="bi bi-mortarboard me-1"></i>Студенты</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#teachersTab"><i class="bi bi-person-workspace me-1"></i>Преподаватели</button></li>
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#studentsTab"><i class="bi bi-mortarboard me-1"></i>Участники</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#teachersTab"><i class="bi bi-person-workspace me-1"></i>Руководители</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#nirTab"><i class="bi bi-journal-bookmark me-1"></i>Мероприятия</button></li>
         </ul>
 
@@ -176,7 +176,7 @@
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
-                            <tr><th>Название</th><th>Преподаватель</th><th>Статус</th><th>Участников</th><th>Действия</th></tr>
+                            <tr><th>Название</th><th>Руководитель</th><th>Статус</th><th>Участников</th><th>Действия</th></tr>
                         </thead>
                         <tbody>
                             @foreach (var n in Model.NIRs)
@@ -221,7 +221,7 @@
                                         <td colspan="5" class="p-0">
                                             <div class="bg-light px-4 py-2">
                                                 <table class="table table-sm mb-0">
-                                                    <thead><tr><th>Студент</th><th>Email</th><th>Дата записи</th><th>Статус</th></tr></thead>
+                                                    <thead><tr><th>Участник</th><th>Email</th><th>Дата записи</th><th>Статус</th></tr></thead>
                                                     <tbody>
                                                     @foreach (var p in n.Participants)
                                                     {
@@ -264,7 +264,7 @@
     <div class="modal-dialog">
         <div class="modal-content rounded-4">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2 text-primary"></i>Редактировать студента</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2 text-primary"></i>Редактировать профиль участника  </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form asp-action="EditStudent" method="post">
@@ -303,7 +303,7 @@
     <div class="modal-dialog">
         <div class="modal-content rounded-4">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2 text-primary"></i>Редактировать преподавателя</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2 text-primary"></i>Редактировать профиль руководителя</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form asp-action="EditTeacher" method="post">
@@ -340,7 +340,7 @@
     <div class="modal-dialog">
         <div class="modal-content rounded-4">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2 text-primary"></i>Редактировать Мероприятия</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2 text-primary"></i>Редактировать мероприятия</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form asp-action="EditNIR" method="post">
@@ -385,13 +385,13 @@
     <div class="modal-dialog">
         <div class="modal-content rounded-4">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold"><i class="bi bi-arrow-up-circle me-2 text-success"></i>Повышение до преподавателя</h5>
+                <h5 class="modal-title fw-bold"><i class="bi bi-arrow-up-circle me-2 text-success"></i>Изменение статуса</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form asp-action="ChangeRole" method="post">
                 <div class="modal-body">
                     <input type="hidden" name="id" id="promoteUserId" />
-                    <p class="text-muted mb-3">Студент: <strong id="promoteUserName"></strong></p>
+                    <p class="text-muted mb-3">Участник: <strong id="promoteUserName"></strong></p>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Кафедра <span class="text-danger">*</span></label>
                         <input type="text" name="department" class="form-control" placeholder="Например: Кафедра информатики" required />
@@ -401,7 +401,7 @@
                         <input type="text" name="position" class="form-control" placeholder="Например: Доцент" required />
                     </div>
                     <div class="alert alert-warning py-2 small mb-0">
-                        <i class="bi bi-exclamation-triangle me-1"></i>Все участия студента в Мероприятия будут удалены.
+                        <i class="bi bi-exclamation-triangle me-1"></i>Все участия пользователя в Мероприятиях будут удалены.
                     </div>
                 </div>
                 <div class="modal-footer border-0">
